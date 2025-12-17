@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const { scanSubnet } = require("../src/scan");
+
 
 const { Command } = require("commander");
 const program = new Command();
@@ -12,7 +14,8 @@ program
   .command("scan <subnet>")
   .description("Scan a subnet (e.g. 192.168.1.0/24)")
   .action((subnet) => {
-    console.log(`Scanning subnet: ${subnet}`);
-  });
+  scanSubnet(subnet);
+});
+
 
 program.parse(process.argv);

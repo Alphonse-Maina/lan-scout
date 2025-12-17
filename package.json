@@ -10,9 +10,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "commander": "^14.0.2"
+    "commander": "^14.0.2",
+    "ping": "^1.0.0"
   },
   "bin": {
-  "lan-scout": "./bin/lan-scout.js"
-}
+    "lan-scout": "./bin/lan-scout.js"
+  }
 }
