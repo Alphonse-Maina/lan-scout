@@ -1,4 +1,4 @@
-# LAN Scout       
+# LAN Scout 🔍
 
 A fast, lightweight CLI tool for scanning local networks and identifying active devices and services.
 
@@ -10,7 +10,7 @@ Built for:
 
 ---
 
-## Features
+##  Features
 - Subnet scanning (/24)
 - Live host detection
 - Common port scanning
@@ -19,8 +19,9 @@ Built for:
 
 ---
 
-## Installation
+##  Installation
 
+```bash
 git clone https://github.com/Alphonse-Maina/lan-scout.git
 cd lan-scout
 npm install
