@@ -21,7 +21,7 @@ Built for:
 
 ## Installation
 
-git clone https://github.com/YOUR_USERNAME/lan-scout.git
+git clone https://github.com/Alphonse-Maina/lan-scout.git
 cd lan-scout
 npm install
 npm link
