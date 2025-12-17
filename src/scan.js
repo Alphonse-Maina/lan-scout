@@ -1,8 +1,10 @@
 const ping = require("ping");
 const { scanPorts } = require("./portScan");
 const { guessDevice } = require("./deviceGuess");
+const { asyncPool } = require("./pool");
 
 const COMMON_PORTS = [80, 443, 554, 8000, 22];
+const CONCURRENCY = 30;
 
 function generateIPs(subnet) {
   const [base, mask] = subnet.split("/");
@@ -15,21 +17,31 @@ function generateIPs(subnet) {
   return Array.from({ length: 254 }, (_, i) => `${prefix}.${i + 1}`);
 }
 
+async function scanHost(ip) {
+  const res = await ping.promise.probe(ip, { timeout: 1 });
+  if (!res.alive) return null;
+
+  const openPorts = await scanPorts(ip, COMMON_PORTS);
+  return {
+    ip,
+    openPorts,
+    device: guessDevice(openPorts),
+  };
+}
+
 async function scanSubnet(subnet) {
   const ips = generateIPs(subnet);
   console.log(`Scanning ${ips.length} IPs...\n`);
 
-  for (const ip of ips) {
-    const res = await ping.promise.probe(ip, { timeout: 1 });
-    if (!res.alive) continue;
+  const results = await asyncPool(CONCURRENCY, ips, scanHost);
 
-    const openPorts = await scanPorts(ip, COMMON_PORTS);
-    const device = guessDevice(openPorts);
-
-    console.log(
-      `${ip}\tONLINE\t[${openPorts.join(",") || "-"}]\t${device}`
-    );
-  }
+  results
+    .filter(Boolean)
+    .forEach(({ ip, openPorts, device }) => {
+      console.log(
+        `${ip}\tONLINE\t[${openPorts.join(",") || "-"}]\t${device}`
+      );
+    });
 }
 
 module.exports = { scanSubnet };
