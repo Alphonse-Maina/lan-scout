@@ -1,27 +1,18 @@
 const ping = require("ping");
+const { scanPorts } = require("./portScan");
+const { guessDevice } = require("./deviceGuess");
+
+const COMMON_PORTS = [80, 443, 554, 8000, 22];
 
 function generateIPs(subnet) {
-  // Expect format: 192.168.10.0/24
   const [base, mask] = subnet.split("/");
-
   if (mask !== "24") {
-    console.error("Only /24 subnets are supported for now");
+    console.error("Only /24 subnets supported");
     process.exit(1);
   }
-
   const parts = base.split(".");
-  if (parts.length !== 4) {
-    console.error("Invalid subnet format");
-    process.exit(1);
-  }
-
   const prefix = `${parts[0]}.${parts[1]}.${parts[2]}`;
-
-  const ips = [];
-  for (let i = 1; i <= 254; i++) {
-    ips.push(`${prefix}.${i}`);
-  }
-  return ips;
+  return Array.from({ length: 254 }, (_, i) => `${prefix}.${i + 1}`);
 }
 
 async function scanSubnet(subnet) {
@@ -29,14 +20,15 @@ async function scanSubnet(subnet) {
   console.log(`Scanning ${ips.length} IPs...\n`);
 
   for (const ip of ips) {
-    try {
-      const res = await ping.promise.probe(ip, { timeout: 1 });
-      if (res.alive) {
-        console.log(`${ip}\tONLINE`);
-      }
-    } catch {
-      // ignore
-    }
+    const res = await ping.promise.probe(ip, { timeout: 1 });
+    if (!res.alive) continue;
+
+    const openPorts = await scanPorts(ip, COMMON_PORTS);
+    const device = guessDevice(openPorts);
+
+    console.log(
+      `${ip}\tONLINE\t[${openPorts.join(",") || "-"}]\t${device}`
+    );
   }
 }
 
